@@ -1,0 +1,28 @@
+{
+  "context": {
+    "beds": [
+      {
+        "bed_id": "bed-1",
+        "station_id": "station-1",
+        "status": "active",
+        "room_gender": "female",
+        "commute_minutes": 15
+      }
+    ],
+    "reservations": [],
+    "prior_stays": []
+  },
+  "items": [
+    {
+      "application_id": "app-acceptance",
+      "applicant_id": "person-acceptance",
+      "arrival": "2026-11-20",
+      "departure": "2026-11-23",
+      "graduation_year": 2026,
+      "interview_invitation": "interview-001",
+      "diploma_reference": "diploma-001",
+      "gender": "female",
+      "request_key": "acceptance-1"
+    }
+  ]
+}
