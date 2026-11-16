@@ -2,6 +2,7 @@ from __future__ import annotations
 import datetime as dt
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
+from ..inventory.calendar import BLOCKING_STATUSES
 
 @dataclass(frozen=True)
 class NightDemand:
@@ -24,7 +25,7 @@ class ShelterCoordination:
     def occupied_nights(self, reservations: Sequence[Mapping[str,Any]]):
         result={}
         for row in reservations:
-            if row.get('status') not in {'confirmed','checked_in'}: continue
+            if row.get('status') not in BLOCKING_STATUSES: continue
             start=dt.date.fromisoformat(str(row['arrival'])); end=dt.date.fromisoformat(str(row['departure']))
             result.setdefault(str(row['bed_id']),set()).update(start+dt.timedelta(days=i) for i in range((end-start).days))
         return result
@@ -49,6 +50,6 @@ class ShelterCoordination:
     def release_for_no_show(self,reservation,observed_at,grace_minutes=120):
         arrival=dt.date.fromisoformat(str(reservation['arrival']));deadline=dt.datetime.combine(arrival,dt.time(20),tzinfo=observed_at.tzinfo)+dt.timedelta(minutes=grace_minutes);releasable=reservation.get('status')=='confirmed' and observed_at>deadline
         return {'reservation_id':reservation.get('reservation_id'),'releasable':releasable,'released_nights':(dt.date.fromisoformat(str(reservation['departure']))-arrival).days if releasable else 0,'deadline':deadline.isoformat()}
-    def evaluate(self,payload,context):
-        ranked=self.rank_beds(payload,context.get('beds',()),context.get('reservations',()));chosen=next((row for row in ranked if row['eligible']),None)
-        return {'requested_nights':len(self.demand(payload).nights),'selected':chosen,'candidate_count':len(ranked),'waitlist_position':None if chosen else 1}
+    def evaluate(self,payload,context,eligible:bool=True):
+        ranked=self.rank_beds(payload,context.get('beds',()),context.get('reservations',()));chosen=next((row for row in ranked if row['eligible']),None) if eligible else None
+        return {'requested_nights':len(self.demand(payload).nights),'selected':chosen,'candidate_count':len(ranked),'waitlist_position':(None if chosen else 1) if eligible else None}

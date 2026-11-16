@@ -23,7 +23,7 @@ class ShelterService:
             state=allocation.status
         else:
             allocation=None; state='rejected'
-        coordination=self.coordination.evaluate(payload,{'beds':beds,'reservations':reservations})
+        coordination=self.coordination.evaluate(payload,{'beds':beds,'reservations':reservations},eligible=decision.eligible)
         result={'application_id':payload['application_id'],'eligible':decision.eligible,'reasons':list(decision.reasons),'approved_nights':decision.approved_nights,'state':state,'bed_id':allocation.bed_id if allocation else None,'station_id':allocation.station_id if allocation else None,'coordination':coordination}
         with self.database.transaction() as connection:
             record={'application_id':payload['application_id'],'owner_id':payload['applicant_id'],'category':'talent_shelter','status':'active' if state in {'allocated','waitlisted'} else 'cancelled','effective_from':payload['arrival'],'effective_to':payload['departure'],'quantity':decision.approved_nights,'amount':'0.00','attributes':result}

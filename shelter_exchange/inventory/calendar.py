@@ -3,6 +3,8 @@ import datetime as dt
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
+BLOCKING_STATUSES = frozenset({'held', 'confirmed', 'checked_in'})
+
 @dataclass(frozen=True, order=True)
 class NightRange:
     arrival: dt.date
@@ -25,7 +27,7 @@ class InventoryCalendar:
         for reservation in reservations:
             if reservation.get('bed_id') != bed_id or reservation.get('reservation_id') == ignore:
                 continue
-            if reservation.get('status') not in {'held','confirmed','checked_in'}:
+            if reservation.get('status') not in BLOCKING_STATUSES:
                 continue
             existing = NightRange(dt.date.fromisoformat(reservation['arrival']), dt.date.fromisoformat(reservation['departure']))
             if period.overlaps(existing):
